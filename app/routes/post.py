@@ -31,7 +31,7 @@ async def find_post(id):
     
     return {"data": schemas.initial_post(post)}
 
-@router.put("/update/{id}")
+@router.put("/update/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def update_post(id, post: models.Post):
     
     post_find_and_update = database.collection_name.find_one_and_update({"_id": ObjectId(id)},{
@@ -46,7 +46,7 @@ async def update_post(id, post: models.Post):
     return {"data": schemas.initial_post(post_after_update)}
 
 
-@router.delete("/delete/{id}")
+@router.delete("/delete/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def delete_post(id):
     post_find_delete = database.collection_name.find_one_and_delete({"_id": ObjectId(id)})
     
