@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from .. import models, schemas, database
 from bson import ObjectId
+from datetime import datetime
 
 router = APIRouter(
     prefix="/users",
@@ -21,17 +22,42 @@ async def find_user(id):
     
     return {"data": schemas.initial_user(user)}
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_post(user: models.UserCreate):
+@router.get("/search", status_code=status.HTTP_202_ACCEPTED)
+async def get_search_users(search):
     
-    user_add = database.collection_users.insert_one(dict(user))
+    query_email = { "email": { "$regex": search }}
+    users_query = schemas.list_users(database.collection_users.find(query_email))
+    
+    if not users_query:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found user with query: {search}")
+    
+    return users_query
+
+@router.post("/create", status_code=status.HTTP_201_CREATED)
+async def create_post(user: models.User):
+    
+    user_add = database.collection_users.insert_one(dict(user, created_at = datetime.utcnow()))
     
     if not user_add:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Can't create user!")
     
-    post_after_created = database.collection_users.find_one({"_id": ObjectId(user_add.inserted_id)})
+    user_after_created = database.collection_users.find_one({"_id": ObjectId(user_add.inserted_id)})
     
-    return {"data": schemas.initial_user(post_after_created), "Message": "Created successfully!!!", }
+    return {"data": schemas.initial_user(user_after_created), "Message": "Created successfully!!!"}
+
+@router.put("/update/{id}", status_code=status.HTTP_202_ACCEPTED)
+async def update_user(id, user: models.User):
+    
+    find_user_and_update = database.collection_users.find_one_and_update({"_id": ObjectId(id)},{
+        "$set": dict(user)
+    })
+    
+    if not find_user_and_update:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found user with id: {id} to update!")
+    
+    user_after_update = database.collection_users.find_one({"_id": ObjectId(id)})
+    
+    return {"data": schemas.initial_user(user_after_update)}
 
 @router.delete("/delete/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def delete_user(id):
