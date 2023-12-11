@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from .. import models, schemas, database
 from bson import ObjectId
+from datetime import datetime
 
 router = APIRouter(
     prefix="/posts",
@@ -13,6 +14,15 @@ router = APIRouter(
 async def get_posts():
     posts = schemas.list_posts(database.collection_posts.find())
     return posts
+
+@router.get("/find_post/{id}")
+async def find_post(id):
+    post = database.collection_posts.find_one({"_id": ObjectId(id)})
+    
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found post with id: {id}")
+    
+    return {"data": schemas.initial_post(post)}
 
 @router.get("/search")
 async def get_search_posts(search):
@@ -34,20 +44,11 @@ async def get_search_posts(search):
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_post(post: models.Post):
-    post_add = database.collection_posts.insert_one(dict(post))
+    post_add = database.collection_posts.insert_one(dict(post, created_at = datetime.utcnow()))
     
     post_after_created = database.collection_posts.find_one({"_id": ObjectId(post_add.inserted_id)})
     
     return {"data": schemas.initial_post(post_after_created), "Message": "Created successfully!!!", }
-
-@router.get("/find_post/{id}")
-async def find_post(id):
-    post = database.collection_posts.find_one({"_id": ObjectId(id)})
-    
-    if not post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found post with id: {id}")
-    
-    return {"data": schemas.initial_post(post)}
 
 @router.put("/update/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def update_post(id, post: models.Post):
