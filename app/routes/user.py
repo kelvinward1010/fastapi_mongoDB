@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from .. import models, schemas, database
+from .. import models, schemas, database, utils
 from bson import ObjectId
 from datetime import datetime
 
@@ -36,6 +36,9 @@ async def get_search_users(search):
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_post(user: models.User):
     
+    hashed_password = utils.has_password(user.password)
+    user.password = hashed_password
+    
     user_add = database.collection_users.insert_one(dict(user, created_at = datetime.utcnow()))
     
     if not user_add:
@@ -47,6 +50,9 @@ async def create_post(user: models.User):
 
 @router.put("/update/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def update_user(id, user: models.User):
+    
+    hashed_password = utils.has_password(user.password)
+    user.password = hashed_password
     
     find_user_and_update = database.collection_users.find_one_and_update({"_id": ObjectId(id)},{
         "$set": dict(user)
