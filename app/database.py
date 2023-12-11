@@ -5,7 +5,8 @@ connect = MongoClient(f"mongodb+srv://{settings.database_username}:{settings.dat
 
 db = connect.todo_db
 
-collection_name = db['posts']
+collection_posts = db['posts']
+collection_users = db['users']
 
 try:
     connect.admin.command('ping')
