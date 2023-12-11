@@ -14,6 +14,24 @@ async def get_posts():
     posts = schemas.list_posts(database.collection_name.find())
     return posts
 
+@router.get("/search")
+async def get_search_posts(search):
+    
+    myquery_title = { "title": { "$regex": search }}
+    myquery_content = { "content": { "$regex": search }}
+    posts_query_title = schemas.list_posts(database.collection_name.find(myquery_title))
+    
+    
+    if not posts_query_title:
+        posts_query_content = schemas.list_posts(database.collection_name.find(myquery_content))
+        
+        if not posts_query_content:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found post with query: {search}")
+        
+        return posts_query_content
+    
+    return posts_query_title
+
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_post(post: models.Post):
     post_add = database.collection_name.insert_one(dict(post))
