@@ -8,7 +8,7 @@ from .routes import post, file, user, auth
 app = FastAPI()
 
 
-origins = ['*']
+origins = ['*', 'https://www.google.com']
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,7 +26,7 @@ def welcome():
                 <title>Wellcome to my FastAPI with MongoDB</title>
             </head>
             <body>
-                <h1>Learn everything in th world!</h1>
+                <h1>Learn everything in the world!</h1>
             </body>
         </html>
     """

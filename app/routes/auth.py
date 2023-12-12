@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Header, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from .. import models, schemas, database, utils, oauth2
 from bson import ObjectId
 from typing import Annotated
+from jose import jwt
 
 
 router = APIRouter(
@@ -12,7 +13,7 @@ router = APIRouter(
 
 
 @router.post("/login")
-async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()]):
+async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()], responses: Response):
     
     user_query = database.collection_users.find_one({"email": user_credentials.username})
     
@@ -29,5 +30,14 @@ async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()
     
     access_token = oauth2.create_access_token(data = {"id": user["id"]})
     
+    responses.set_cookie("access_token", access_token, httponly=True)
+    
     return {"Message": f"Login with email: {user_credentials.username} successful!", "access_token": access_token, "token_type": "bearer"}
 
+
+@router.post("/logout")
+async def logout(responses: Response):
+    
+    responses.delete_cookie("access_token", secure=True, samesite=None)
+
+    return {"Message": f"Logout!"}
