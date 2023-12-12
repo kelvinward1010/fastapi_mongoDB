@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
-from .. import models, schemas, database, utils
+from .. import models, schemas, database, utils, oauth2
 from bson import ObjectId
 from typing import Annotated
 
@@ -15,6 +15,10 @@ router = APIRouter(
 async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()]):
     
     user_query = database.collection_users.find_one({"email": user_credentials.username})
+    
+    if not user_query:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found user with email: {user_credentials.username} to login!")
+    
     user = schemas.initial_user(user_query)
     
     if not user_query:
@@ -23,7 +27,7 @@ async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()
     if not utils.verify(user_credentials.password, user.get('password')):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Invalid Password!")
     
-    # print(user)
+    access_token = oauth2.create_access_token(data = {"id": user["id"]})
     
-    return {"data": user}
+    return {"Message": f"Login with email: {user_credentials.username} successful!", "access_token": access_token, "token_type": "bearer"}
 

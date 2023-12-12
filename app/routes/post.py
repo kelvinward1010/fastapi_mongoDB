@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
-from .. import models, schemas, database
+from fastapi import APIRouter, HTTPException, status, Depends
+from .. import models, schemas, database, oauth2
 from bson import ObjectId
 from datetime import datetime
 
@@ -12,7 +12,15 @@ router = APIRouter(
 
 @router.get("/")
 async def get_posts():
+    
     posts = schemas.list_posts(database.collection_posts.find())
+    return posts
+
+@router.get("/posts_follow_token")
+async def get_posts(current_user = Depends(oauth2.get_current_user)):
+    
+    posts = schemas.list_posts(database.collection_posts.find({"owner_id": current_user['id']}))
+    
     return posts
 
 @router.get("/find_post/{id}")
@@ -43,8 +51,8 @@ async def get_search_posts(search):
     return posts_query_title
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_post(post: models.Post):
-    post_add = database.collection_posts.insert_one(dict(post, created_at = datetime.utcnow()))
+async def create_post(post: models.Post, current_user = Depends(oauth2.get_current_user)):
+    post_add = database.collection_posts.insert_one(dict(post, created_at = datetime.utcnow(), owner_id = current_user['id']))
     
     post_after_created = database.collection_posts.find_one({"_id": ObjectId(post_add.inserted_id)})
     
@@ -64,6 +72,25 @@ async def update_post(id, post: models.Post):
     
     return {"data": schemas.initial_post(post_after_update)}
 
+@router.put("/update_post_follow_token/{id}", status_code=status.HTTP_202_ACCEPTED)
+async def update_post(id, post: models.Post, current_user = Depends(oauth2.get_current_user)):
+    
+    find_post_check_owner = database.collection_posts.find_one({"_id": ObjectId(id)})
+    
+    if not find_post_check_owner:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found post with id: {id}")
+    
+    if find_post_check_owner['owner_id'] != current_user['id']:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to updated!")
+    else:
+        database.collection_posts.find_one_and_update({"_id": ObjectId(id)},{
+            "$set": dict(post)
+        })
+    
+    post_after_update = database.collection_posts.find_one({"_id": ObjectId(id)})
+    
+    return {"data": schemas.initial_post(post_after_update)}
+
 
 @router.delete("/delete/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def delete_post(id):
@@ -71,6 +98,21 @@ async def delete_post(id):
     
     if not post_find_delete:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found post with id: {id}")
+    
+    return {"data": f"Delete successfully with id {id}"}
+
+@router.delete("/delete_post_follow_token/{id}", status_code=status.HTTP_202_ACCEPTED)
+async def delete_post(id, current_user = Depends(oauth2.get_current_user)):
+    
+    find_post_check_owner = database.collection_posts.find_one({"_id": ObjectId(id)})
+    
+    if not find_post_check_owner:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found post with id: {id}")
+    
+    if find_post_check_owner['owner_id'] != current_user['id']:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to delete!")
+    else:
+        database.collection_posts.find_one_and_delete({"_id": ObjectId(id)})
     
     return {"data": f"Delete successfully with id {id}"}
 
