@@ -58,6 +58,20 @@ async def create_post(post: models.Post, current_user = Depends(oauth2.get_curre
     
     return {"data": schemas.initial_post(post_after_created), "Message": "Created successfully!!!", }
 
+@router.post("/create_many", status_code=status.HTTP_201_CREATED)
+async def create_post(posts: list[models.Post], current_user = Depends(oauth2.get_current_user)):
+    
+    posts_add = database.collection_posts.insert_many(list(dict(post, created_at = datetime.utcnow(), owner_id = current_user['id']) for post in posts))
+    
+    posts_convert_ids = posts_add.inserted_ids
+    
+    posts_after_created = schemas.list_posts(database.collection_posts.find_one({"_id": ObjectId(post_id)}) for post_id in posts_convert_ids)
+    
+    return {
+        "data": posts_after_created, 
+        "Message": "Created many successfully!!!", 
+    }
+
 @router.put("/update/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def update_post(id, post: models.Post):
     

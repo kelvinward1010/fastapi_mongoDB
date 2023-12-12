@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from .routes import post, file, user, auth
 
 
@@ -17,9 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
   
-@app.get("/", tags=["Welcome to API Server"])
-def root():
-    return {"message": "Wellcome to my FastAPI with MongoDB"}
+@app.get("/", tags=["Welcome to API Server"], response_class=HTMLResponse)
+def welcome():
+    return """
+        <html>
+            <head>
+                <title>Wellcome to my FastAPI with MongoDB</title>
+            </head>
+            <body>
+                <h1>Learn everything in th world!</h1>
+            </body>
+        </html>
+    """
 
 app.include_router(auth.router)
 app.include_router(user.router)
