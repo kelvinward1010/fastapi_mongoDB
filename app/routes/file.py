@@ -1,9 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from typing import Annotated
-import secrets
-
-
 
 router = APIRouter(
     prefix="/file",
