@@ -59,7 +59,7 @@ async def create_post(post: models.Post, current_user = Depends(oauth2.get_curre
     return {"data": schemas.initial_post(post_after_created), "Message": "Created successfully!!!", }
 
 @router.post("/create_many", status_code=status.HTTP_201_CREATED)
-async def create_post(posts: list[models.Post], current_user = Depends(oauth2.get_current_user)):
+async def create_many_post(posts: list[models.Post], current_user = Depends(oauth2.get_current_user)):
     
     posts_add = database.collection_posts.insert_many(list(dict(post, created_at = datetime.utcnow(), owner_id = current_user['id']) for post in posts))
     

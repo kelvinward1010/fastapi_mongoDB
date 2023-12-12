@@ -34,7 +34,7 @@ async def get_search_users(search):
     return users_query
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_post(user: models.User):
+async def create_user(user: models.User):
     
     hashed_password = utils.has_password(user.password)
     user.password = hashed_password
@@ -47,6 +47,25 @@ async def create_post(user: models.User):
     user_after_created = database.collection_users.find_one({"_id": ObjectId(user_add.inserted_id)})
     
     return {"data": schemas.initial_user(user_after_created), "Message": "Created successfully!!!"}
+
+@router.post("/create_many", status_code=status.HTTP_201_CREATED)
+async def create_many_user(users: list[models.User]):
+    
+    for user in users:
+        dict(user)
+        hashed_password = utils.has_password(user.password)
+        user.password = hashed_password
+    
+    users_add = database.collection_users.insert_many(list(dict(user, created_at = datetime.utcnow()) for user in users))
+
+    users_convert_ids = users_add.inserted_ids
+    
+    users_after_created = schemas.list_users(database.collection_users.find_one({"_id": ObjectId(post_id)}) for post_id in users_convert_ids)
+    
+    return {
+        "data": users_after_created, 
+        "Message": "Created many successfully!!!", 
+    }
 
 @router.put("/update/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def update_user(id, user: models.User):

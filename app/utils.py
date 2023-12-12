@@ -7,3 +7,7 @@ def has_password(password: str):
 
 def verify(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
+
+def convert_list(data: list):
+    convert = list(data_initial for data_initial in data)
+    return convert
