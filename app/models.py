@@ -31,6 +31,11 @@ class Post(BaseModel):
     
 class PostCreate(Post):
     created_at: datetime
+    owner_id: str
     
     class Config:
         from_attributes = True
+        
+#Comments
+class Comment(BaseModel):
+    content: str

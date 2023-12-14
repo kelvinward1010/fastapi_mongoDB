@@ -23,3 +23,17 @@ def initial_post(post) -> dict:
 
 def list_posts(posts) -> list:
     return [initial_post(post) for post in posts]
+
+
+#Comment
+def initial_comment(comment) -> dict:
+    return {
+        "id": str(comment["_id"]),
+        "content": comment["content"],
+        "owner_id": comment["owner_id"],
+        "post_id": comment["post_id"],
+        "created_at": comment["created_at"],
+    }
+
+def list_comments(comments) -> list:
+    return [initial_comment(comment) for comment in comments]

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from .routes import post, file, user, auth
+from .routes import post, file, user, auth, comment
 
 
 
@@ -35,3 +35,4 @@ app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(post.router)
 app.include_router(file.router)
+app.include_router(comment.router)

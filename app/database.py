@@ -7,6 +7,7 @@ db = connect.todo_db
 
 collection_posts = db['posts']
 collection_users = db['users']
+collection_comments = db['comments']
 
 try:
     connect.admin.command('ping')

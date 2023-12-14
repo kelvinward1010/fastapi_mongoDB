@@ -32,6 +32,19 @@ async def find_post(id):
     
     return {"data": schemas.initial_post(post)}
 
+@router.get("/find_post_has_comments/{id}")
+async def find_post_has_comments(id):
+    post = database.collection_posts.find_one({"_id": ObjectId(id)})
+    
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found post with id: {id}")
+    
+    comments_in_post = schemas.list_comments(database.collection_comments.find({"post_id": id}))
+    
+    config_post = dict(schemas.initial_post(post), comments = comments_in_post)
+    
+    return {"data": config_post}
+
 @router.get("/search")
 async def get_search_posts(search):
     
@@ -130,3 +143,18 @@ async def delete_post(id, current_user = Depends(oauth2.get_current_user)):
     
     return {"data": f"Delete successfully with id {id}"}
 
+@router.delete("/delete_post_and_all_comment/{id}", status_code=status.HTTP_202_ACCEPTED)
+async def delete_post_and_all_comment(id):
+    
+    find_post_check_owner = database.collection_posts.find_one({"_id": ObjectId(id)})
+    
+    if not find_post_check_owner:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found post with id: {id}")
+    
+    database.collection_posts.find_one_and_delete({"_id": ObjectId(id)})
+    
+    comments_in_post = schemas.list_comments(database.collection_comments.find({"post_id": id}))
+    
+    database.collection_comments.delete_many({"post_id": id})
+    
+    return {"data": f"Delete successfully with id {id}", "data have been deleted": comments_in_post}
