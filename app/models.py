@@ -39,3 +39,7 @@ class PostCreate(Post):
 #Comments
 class Comment(BaseModel):
     content: str
+    
+#Like
+class Like(BaseModel):
+    isLike: Literal[0,1]

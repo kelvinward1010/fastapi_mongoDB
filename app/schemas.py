@@ -18,6 +18,7 @@ def initial_post(post) -> dict:
         "title": post["title"],
         "content": post["content"],
         "owner_id": post["owner_id"],
+        "likes": post["likes"],
         "created_at": post["created_at"],
     }
 

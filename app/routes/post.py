@@ -65,7 +65,7 @@ async def get_search_posts(search):
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_post(post: models.Post, current_user = Depends(oauth2.get_current_user)):
-    post_add = database.collection_posts.insert_one(dict(post, created_at = datetime.utcnow(), owner_id = current_user['id']))
+    post_add = database.collection_posts.insert_one(dict(post, created_at = datetime.utcnow(), owner_id = current_user['id'], likes = []))
     
     post_after_created = database.collection_posts.find_one({"_id": ObjectId(post_add.inserted_id)})
     
@@ -74,7 +74,7 @@ async def create_post(post: models.Post, current_user = Depends(oauth2.get_curre
 @router.post("/create_many", status_code=status.HTTP_201_CREATED)
 async def create_many_post(posts: list[models.Post], current_user = Depends(oauth2.get_current_user)):
     
-    posts_add = database.collection_posts.insert_many(list(dict(post, created_at = datetime.utcnow(), owner_id = current_user['id']) for post in posts))
+    posts_add = database.collection_posts.insert_many(list(dict(post, created_at = datetime.utcnow(), owner_id = current_user['id'], likes = []) for post in posts))
     
     posts_convert_ids = posts_add.inserted_ids
     

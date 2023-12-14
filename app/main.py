@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from .routes import post, file, user, auth, comment
+from .routes import post, file, user, auth, comment, like
 
 
 
@@ -36,3 +36,4 @@ app.include_router(user.router)
 app.include_router(post.router)
 app.include_router(file.router)
 app.include_router(comment.router)
+app.include_router(like.router)
