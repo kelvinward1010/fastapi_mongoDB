@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Header, Request, Response
+from fastapi import APIRouter, HTTPException, status, Depends, Header, Request, Response, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from .. import models, schemas, database, utils, oauth2
 from bson import ObjectId
@@ -13,12 +13,12 @@ router = APIRouter(
 
 
 @router.post("/login")
-async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()], responses: Response):
+async def login(user_credentials: models.User, responses: Response):
     
-    user_query = database.collection_users.find_one({"email": user_credentials.username})
+    user_query = database.collection_users.find_one({"email": user_credentials.email})
     
     if not user_query:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found user with email: {user_credentials.username} to login!")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found user with email: {user_credentials.email} to login!")
     
     user = schemas.initial_user(user_query)
     
@@ -32,7 +32,7 @@ async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()
     
     responses.set_cookie("access_token", access_token, httponly=True)
     
-    return {"Message": f"Login with email: {user_credentials.username} successful!", "access_token": access_token, "token_type": "bearer"}
+    return {"Message": f"Login with email: {user_credentials.email} successful!", "access_token": access_token, "token_type": "bearer"}
 
 
 @router.post("/logout")

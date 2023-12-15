@@ -36,6 +36,11 @@ async def get_search_users(search):
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_user(user: models.User):
     
+    user_find_checked = database.collection_users.find_one({"email": user.email})
+    
+    if user_find_checked:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"User have {user.email} already exists!")
+    
     hashed_password = utils.has_password(user.password)
     user.password = hashed_password
     
