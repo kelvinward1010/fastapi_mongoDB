@@ -45,6 +45,15 @@ async def find_post_has_comments(id):
     
     return {"data": config_post}
 
+@router.get("/posts_with_everthing")
+async def find_post_has_comments():
+    
+    posts = schemas.list_posts(database.collection_posts.find())
+    
+    comments_in_posts = list(dict(post, comments = schemas.list_comments(database.collection_comments.find({"post_id": post['id']}))) for post in posts)
+    
+    return {"data": comments_in_posts}
+
 @router.get("/search")
 async def get_search_posts(search):
     
