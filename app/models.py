@@ -23,6 +23,12 @@ class UserCreate(User):
     
     class Config:
         from_attributes = True
+
+class UserUpdate(BaseModel):
+    email: EmailStr
+    old_password: str
+    password: str
+    
     
 #Posts
 class Post(BaseModel):

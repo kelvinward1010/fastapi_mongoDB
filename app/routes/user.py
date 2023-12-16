@@ -73,7 +73,17 @@ async def create_many_user(users: list[models.User]):
     }
 
 @router.put("/update/{id}", status_code=status.HTTP_202_ACCEPTED)
-async def update_user(id, user: models.User):
+async def update_user(id, user: models.UserUpdate):
+    
+    user_query = database.collection_users.find_one({"email": user.email})
+    
+    if not user_query:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found user with email: {user.email} to update!")
+    
+    user_found = schemas.initial_user(user_query)
+    
+    if not utils.verify(user.old_password, user_found.get('password')):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Invalid Old Password!")
     
     hashed_password = utils.has_password(user.password)
     user.password = hashed_password
