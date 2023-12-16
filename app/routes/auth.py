@@ -32,7 +32,12 @@ async def login(user_credentials: models.User, responses: Response):
     
     responses.set_cookie("access_token", access_token, httponly=True)
     
-    return {"Message": f"Login with email: {user_credentials.email} successful!", "access_token": access_token, "token_type": "bearer"}
+    return {
+        "Message": f"Login with email: {user_credentials.email} successful!", 
+        "current_user": user,
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
 
 
 @router.post("/logout")
