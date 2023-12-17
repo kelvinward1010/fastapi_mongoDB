@@ -152,8 +152,12 @@ async def delete_post(id, current_user = Depends(oauth2.get_current_user)):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to delete!")
     else:
         database.collection_posts.find_one_and_delete({"_id": ObjectId(id)})
+        
+        comments_in_post = schemas.list_comments(database.collection_comments.find({"post_id": id}))
     
-    return {"data": f"Delete successfully with id {id}"}
+        database.collection_comments.delete_many({"post_id": id})
+    
+    return {"message": f"Delete successfully with id {id}", "data_in_post_deleted": comments_in_post}
 
 @router.delete("/delete_post_and_all_comment/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def delete_post_and_all_comment(id):
