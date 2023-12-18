@@ -45,6 +45,25 @@ async def update_comment(id, comment: models.Comment):
     
     return {"data": schemas.initial_comment(comment_after_update)}
 
+@router.put("/update_follow_token/{id}", status_code=status.HTTP_202_ACCEPTED)
+async def update_comment_follow_token(id, comment: models.Comment, current_user = Depends(oauth2.get_current_user)):
+    
+    find_comment_check_owner = database.collection_comments.find_one({"_id": ObjectId(id)})
+    
+    if not find_comment_check_owner:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found comment with id: {id}")
+    
+    if find_comment_check_owner['owner_id'] != current_user['id']:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to update!")
+    else:
+        database.collection_comments.find_one_and_update({"_id": ObjectId(id)},{
+            "$set": dict(comment)
+        })
+    
+    comment_after_update = database.collection_comments.find_one({"_id": ObjectId(id)})
+    
+    return {"data": schemas.initial_comment(comment_after_update)}
+
 
 @router.delete("/delete/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def delete_comment(id):
@@ -52,5 +71,20 @@ async def delete_comment(id):
     
     if not comment_find_delete:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found comment with id: {id}")
+    
+    return {"data": f"Delete successfully with id {id}"}
+
+@router.delete("/delete_follow_token/{id}", status_code=status.HTTP_202_ACCEPTED)
+async def delete_comment_follow_token(id, current_user = Depends(oauth2.get_current_user)):
+    
+    find_comment_check_owner = database.collection_comments.find_one({"_id": ObjectId(id)})
+    
+    if not find_comment_check_owner:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found comment with id: {id}")
+    
+    if find_comment_check_owner['owner_id'] != current_user['id']:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to delete!")
+    else:
+        database.collection_comments.find_one_and_delete({"_id": ObjectId(id)})
     
     return {"data": f"Delete successfully with id {id}"}
