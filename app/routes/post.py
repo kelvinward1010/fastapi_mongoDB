@@ -50,12 +50,22 @@ async def find_post_has_comments():
     
     posts = schemas.list_posts(database.collection_posts.find())
     
-    comments_in_posts = list(dict(post, 
-                                  comments = schemas.list_comments(database.collection_comments.find({"post_id": post['id']})),
-                                  user = schemas.initial_user(database.collection_users.find_one({"_id": ObjectId(post['owner_id'])}))
-                                  ) for post in posts)
+    comments = schemas.list_comments(database.collection_comments.find())
+    user_in_comments = list(dict(comment, user = schemas.initial_user(database.collection_users.find_one({"_id": ObjectId(comment['owner_id'])}))) for comment in comments)
+    
+    def get_comments(data, post):
+        final_cmts = []
+        for x in data:
+            if x['post_id'] == post['id']:
+                final_cmts.append(x)
+        return final_cmts
+    
+    all_in_posts = list(dict(post, 
+                                    comments = get_comments(user_in_comments, post),
+                                    user = schemas.initial_user(database.collection_users.find_one({"_id": ObjectId(post['owner_id'])}))
+                                    ) for post in posts)
 
-    return comments_in_posts
+    return all_in_posts
 
 @router.get("/search")
 async def get_search_posts(search):
