@@ -49,3 +49,13 @@ class Comment(BaseModel):
 #Like
 class Like(BaseModel):
     isLike: Literal[0,1]
+    
+
+#Conversations
+class Conversation(BaseModel):
+    userId_1: str
+    
+    
+#Messages
+class Message(BaseModel):
+    content: str

@@ -38,3 +38,29 @@ def initial_comment(comment) -> dict:
 
 def list_comments(comments) -> list:
     return [initial_comment(comment) for comment in comments]
+
+
+#Conversation
+def initial_conversation(conversation) -> dict:
+    return {
+        "id": str(conversation["_id"]),
+        "user_1": conversation["userId_1"],
+        "user_2": conversation["userId_2"],
+        "created_at": conversation["created_at"],
+    }
+
+def list_conversations(conversations) -> list:
+    return [initial_conversation(conversation) for conversation in conversations]
+
+#Conversation
+def initial_message(message) -> dict:
+    return {
+        "id": str(message["_id"]),
+        "content": message["content"],
+        "conversation_id": message['conversation_id'],
+        "owner_id": message["owner_id"],
+        "created_at": message["created_at"],
+    }
+
+def list_messages(messages) -> list:
+    return [initial_message(message) for message in messages]
