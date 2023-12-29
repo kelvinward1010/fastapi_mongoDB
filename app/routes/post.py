@@ -71,19 +71,24 @@ async def find_post_has_comments():
 async def get_search_posts(search):
     
     myquery_title = { "title": { "$regex": search }}
-    myquery_content = { "content": { "$regex": search }}
     posts_query_title = schemas.list_posts(database.collection_posts.find(myquery_title))
     
+    comments = schemas.list_comments(database.collection_comments.find())
+    user_in_comments = list(dict(comment, user = schemas.initial_user(database.collection_users.find_one({"_id": ObjectId(comment['owner_id'])}))) for comment in comments)
     
-    if not posts_query_title:
-        posts_query_content = schemas.list_posts(database.collection_posts.find(myquery_content))
-        
-        if not posts_query_content:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found post with query: {search}")
-        
-        return posts_query_content
+    def get_comments(data, post):
+        final_cmts = []
+        for x in data:
+            if x['post_id'] == post['id']:
+                final_cmts.append(x)
+        return final_cmts
     
-    return posts_query_title
+    all_in_posts_1 = list(dict(post, 
+                                    comments = get_comments(user_in_comments, post),
+                                    user = schemas.initial_user(database.collection_users.find_one({"_id": ObjectId(post['owner_id'])}))
+                                    ) for post in posts_query_title)
+    
+    return all_in_posts_1
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_post(post: models.Post, current_user = Depends(oauth2.get_current_user)):
