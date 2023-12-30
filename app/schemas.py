@@ -3,6 +3,7 @@ from datetime import datetime
 def initial_user(user) -> dict:
     return {
         "id": str(user["_id"]),
+        "name": str(user["name"]),
         "email": user["email"],
         "password": user["password"],
         "created_at": user["created_at"],

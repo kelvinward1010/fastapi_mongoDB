@@ -25,8 +25,8 @@ async def find_user(id):
 @router.get("/search", status_code=status.HTTP_202_ACCEPTED)
 async def get_search_users(search):
     
-    query_email = { "email": { "$regex": search }}
-    users_query = schemas.list_users(database.collection_users.find(query_email))
+    query_name = { "name": { "$regex": search }}
+    users_query = schemas.list_users(database.collection_users.find(query_name))
     
     if not users_query:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found user with query: {search}")

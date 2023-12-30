@@ -13,7 +13,7 @@ router = APIRouter(
 
 
 @router.post("/login")
-async def login(user_credentials: models.User, responses: Response):
+async def login(user_credentials: models.UserAuth, responses: Response):
     
     user_query = database.collection_users.find_one({"email": user_credentials.email})
     

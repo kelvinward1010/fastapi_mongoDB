@@ -15,9 +15,14 @@ class TokenData(BaseModel):
 
 #Users
 class User(BaseModel):
+    name: str
     email: EmailStr
     password: str
-    
+
+class UserAuth(BaseModel):
+    email: EmailStr
+    password: str
+
 class UserCreate(User):
     created_at: datetime
     
@@ -25,6 +30,7 @@ class UserCreate(User):
         from_attributes = True
 
 class UserUpdate(BaseModel):
+    name: str
     email: EmailStr
     old_password: str
     password: str
