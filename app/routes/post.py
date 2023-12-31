@@ -23,6 +23,11 @@ async def get_posts(current_user = Depends(oauth2.get_current_user)):
     
     return posts
 
+@router.get("/posts_follow_user/{id}")
+async def get_posts_follow_user(id):
+    posts = schemas.list_posts(database.collection_posts.find({"owner_id": id}))
+    return {"data": posts}
+
 @router.get("/find_post/{id}")
 async def find_post(id):
     post = database.collection_posts.find_one({"_id": ObjectId(id)})
