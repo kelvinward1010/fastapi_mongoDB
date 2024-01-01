@@ -65,7 +65,7 @@ async def create_conversation(conversation: models.Conversation, current_user = 
     conversations = schemas.list_conversations(database.collection_conversations.find()) 
     
     for i in conversations:
-        if i['user_1'] == current_user['id'] or i['user_2'] == current_user['id']:
+        if i['user_1'] == current_user['id'] and i['user_2'] == conversation.userId_1 or i['user_1'] == conversation.userId_1 and i['user_2'] == current_user['id']:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="You can't create with a conversation exits!")
     
     conversation_add = database.collection_conversations.insert_one(dict(conversation, userId_2 = current_user['id'], created_at = datetime.utcnow()))
