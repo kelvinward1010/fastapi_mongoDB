@@ -68,11 +68,8 @@ async def get_conversations_id(id):
                                 created_at = conversation_find['created_at'])
     messages_find = schemas.list_messages(database.collection_messages.find({"conversation_id": conversation_find['id']}))
     messages_in_conversation = list(dict(message, user = schemas.initial_user(database.collection_users.find_one({"_id": ObjectId(message['owner_id'])}))) for message in messages_find)
-    
-    all_in_conversation = dict(user_in_conversation, 
-                                messages = messages_in_conversation,
-                            )
-    
+    if messages_in_conversation:
+        all_in_conversation = dict(user_in_conversation, messages = messages_in_conversation)
     
     return {"data": all_in_conversation}
     
