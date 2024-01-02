@@ -8,7 +8,7 @@ from .routes import post, file, user, auth, comment, like, conversation, message
 app = FastAPI()
 
 
-origins = ['*', 'https://www.google.com']
+origins = ['*']
 
 app.add_middleware(
     CORSMiddleware,
